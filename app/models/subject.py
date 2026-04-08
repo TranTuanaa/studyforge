@@ -1,0 +1,15 @@
+from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy.sql import func
+from app.models.base import Base
+
+class Subject(Base):
+    __tablename__ = "subjects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True, nullable=False)
+    credits = Column(Integer, nullable=False)
+    difficulty = Column(Integer, default=5)
+    priority = Column(Integer, default=5)
+    deadline = Column(DateTime, nullable=True)
+    hours_wanted = Column(Float, default=0.0)
+    created_at = Column(DateTime, server_default=func.now())
