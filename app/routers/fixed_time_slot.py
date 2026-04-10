@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import time
 from typing import List
 from app.database import get_db
 from app.crud.fixed_time_slot import create_fixed_slot, get_fixed_slots
@@ -12,10 +13,20 @@ router = APIRouter(
 
 ALLOWED_FRAMES = [(7, 11), (13, 17), (19, 22)]
 
-def is_in_allowed_frame(start_time: str, end_time: str) -> bool:
+def is_in_allowed_frame(start_time, end_time) -> bool:
+    """Kiểm tra slot có nằm trong 3 khung giờ cho phép không (hỗ trợ cả string và time object)"""
     try:
-        s = float(start_time[:2]) + float(start_time[3:]) / 60
-        e = float(end_time[:2]) + float(end_time[3:]) / 60
+        # Chuyển sang số giờ float
+        if isinstance(start_time, time):
+            s = start_time.hour + start_time.minute / 60.0
+        else:
+            s = float(str(start_time)[:2]) + float(str(start_time)[3:5]) / 60.0
+
+        if isinstance(end_time, time):
+            e = end_time.hour + end_time.minute / 60.0
+        else:
+            e = float(str(end_time)[:2]) + float(str(end_time)[3:5]) / 60.0
+
         for frame_start, frame_end in ALLOWED_FRAMES:
             if max(s, frame_start) < min(e, frame_end):
                 return True
@@ -28,6 +39,7 @@ def create_fixed_time_slot(
     slot: FixedTimeSlotCreate,
     db: Session = Depends(get_db)
 ):
+    """Tạo fixed slot - CHỈ cho phép trong 3 khung giờ 7-11, 13-17, 19-22"""
     if not is_in_allowed_frame(slot.start_time, slot.end_time):
         raise HTTPException(
             status_code=400,
