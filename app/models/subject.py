@@ -10,6 +10,4 @@ class Subject(Base):
     credits = Column(Integer, nullable=False)
     difficulty = Column(Integer, default=5)
     priority = Column(Integer, default=5)
-    deadline = Column(DateTime, nullable=True)
-    hours_wanted = Column(Float, default=0.0)
     created_at = Column(DateTime, server_default=func.now())
