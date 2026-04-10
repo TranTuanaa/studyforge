@@ -112,7 +112,11 @@ class OptimizationService:
             })
         return schedule
 
-    def optimize_schedule(self, subjects: List[Dict], class_schedules: List[Dict] = None, fixed_slots: List[Dict] = None, days: int = 7) -> Dict:
+    def optimize_schedule(self, 
+                          subjects: List[Dict], 
+                          class_schedules: List[Dict] = None, 
+                          fixed_slots: List[Dict] = None, 
+                          days: int = 7) -> Dict:
         real_free_time = self.calculate_real_free_time(days, class_schedules, fixed_slots)
         allocation = self.allocate_percentages(subjects, real_free_time)
         schedule = self.fill_schedule(allocation, days)
