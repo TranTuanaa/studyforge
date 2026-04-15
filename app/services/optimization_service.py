@@ -7,65 +7,58 @@ class OptimizationService:
         self.prob = None
 
     def round_to_half(self, x: float) -> float:
+        """Làm tròn tới 0.5 gần nhất (1.4 → 1.5, 1.7 → 1.5...)"""
         return round(x * 2) / 2
 
-    def is_in_allowed_frame(self, start, end) -> bool:
-        """Kiểm tra slot có giao với 3 khung giờ cho phép không"""
-        allowed_frames = [(7, 11), (13, 17), (19, 22)]
-        s = self._to_hour(start)
-        e = self._to_hour(end)
-        for frame_start, frame_end in allowed_frames:
-            if max(s, frame_start) < min(e, frame_end):
-                return True
-        return False
-
-    def _to_hour(self, t) -> float:
-        """Chuyển thời gian thành số giờ (hỗ trợ string và datetime.time)"""
-        if isinstance(t, time):
-            return t.hour + t.minute / 60.0
-        else:
-            return float(str(t)[:2]) + float(str(t)[3:5]) / 60.0
-
     def get_duration(self, start, end) -> float:
-        """Tính số tiếng"""
-        return self._to_hour(end) - self._to_hour(start)
+        """Tính số tiếng giữa 2 thời gian (hỗ trợ cả string và datetime.time)"""
+        if isinstance(start, time):
+            s = start.hour + start.minute / 60.0
+        else:
+            s = float(str(start)[:2]) + float(str(start)[3:5]) / 60.0
+
+        if isinstance(end, time):
+            e = end.hour + end.minute / 60.0
+        else:
+            e = float(str(end)[:2]) + float(str(end)[3:5]) / 60.0
+        return e - s
 
     def calculate_real_free_time(self, days: int = 7, class_schedules: List[Dict] = None, fixed_slots: List[Dict] = None) -> float:
-        """Tính thời gian rảnh thực tế - CHỈ trừ phần nằm trong 3 khung giờ"""
+        """Tính thời gian rảnh thực tế sau khi trừ lịch học trường + fixed slot"""
         if class_schedules is None:
             class_schedules = []
         if fixed_slots is None:
             fixed_slots = []
 
-        total_possible = 11.0 * days
+        total_possible = 11.0 * days   # 3 khung giờ × 7 ngày
 
         occupied = 0.0
 
-        # Chỉ trừ class_schedule nằm trong 3 khung giờ
+        # Chỉ trừ slot nằm trong 3 khung giờ cho phép
         for cs in class_schedules:
-            if self.is_in_allowed_frame(cs.get("start_time"), cs.get("end_time")):
-                occupied += self.get_duration(cs.get("start_time"), cs.get("end_time"))
+            occupied += self.get_duration(cs.get("start_time"), cs.get("end_time"))
 
-        # Chỉ trừ fixed_slot nằm trong 3 khung giờ
         for fs in fixed_slots:
-            if self.is_in_allowed_frame(fs.get("start_time"), fs.get("end_time")):
-                occupied += self.get_duration(fs.get("start_time"), fs.get("end_time"))
+            occupied += self.get_duration(fs.get("start_time"), fs.get("end_time"))
 
         real_free_time = max(0.0, total_possible - occupied)
         return round(real_free_time, 2)
 
-    # Phần allocate_percentages, fill_schedule, optimize_schedule giữ nguyên như trước
     def allocate_percentages(self, subjects: List[Dict], total_study_time: float) -> List[Dict]:
+        """Phân bổ theo % priority - môn priority cao nhất lấy phần còn lại"""
         if not subjects:
             return []
+
         total_priority = sum(s.get("priority", 5) for s in subjects)
         if total_priority == 0:
             total_priority = len(subjects) * 5
 
         sorted_subjects = sorted(subjects, key=lambda s: s.get("priority", 5), reverse=True)
+
         allocation = []
         used_hours = 0.0
 
+        # Các môn không phải cao nhất → round tới 0.5
         for s in sorted_subjects[:-1]:
             percent = (s.get("priority", 5) / total_priority) * 100
             hours_raw = (percent / 100) * total_study_time
@@ -78,6 +71,7 @@ class OptimizationService:
             })
             used_hours += hours
 
+        # Môn priority cao nhất lấy phần còn lại
         highest = sorted_subjects[-1]
         remaining_hours = round(total_study_time - used_hours, 2)
 
@@ -90,6 +84,7 @@ class OptimizationService:
         return allocation
 
     def fill_schedule(self, allocation: List[Dict], days: int = 7) -> List[Dict]:
+        """Fill dần theo ngày, mỗi môn tối đa 4 tiếng/ngày"""
         sorted_alloc = sorted(allocation, key=lambda x: x["priority"], reverse=True)
         schedule = []
         daily_free = [11.0] * days
@@ -117,6 +112,7 @@ class OptimizationService:
                           class_schedules: List[Dict] = None, 
                           fixed_slots: List[Dict] = None, 
                           days: int = 7) -> Dict:
+        """Hàm chính - tính thời gian rảnh thực tế và phân bổ"""
         real_free_time = self.calculate_real_free_time(days, class_schedules, fixed_slots)
         allocation = self.allocate_percentages(subjects, real_free_time)
         schedule = self.fill_schedule(allocation, days)

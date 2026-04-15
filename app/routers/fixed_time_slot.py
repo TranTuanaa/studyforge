@@ -13,6 +13,7 @@ router = APIRouter(
 ALLOWED_FRAMES = [(7, 11), (13, 17), (19, 22)]
 
 def is_in_allowed_frame(start_time: str, end_time: str) -> bool:
+    """Kiểm tra slot có nằm trong 3 khung giờ cho phép không"""
     try:
         s = float(start_time[:2]) + float(start_time[3:]) / 60
         e = float(end_time[:2]) + float(end_time[3:]) / 60
@@ -23,19 +24,22 @@ def is_in_allowed_frame(start_time: str, end_time: str) -> bool:
     except:
         return False
 
-# POST được ép lên trên bằng operation_id
+# POST được đặt trước GET + operation_id để Swagger hiển thị CREATE ở trên
 @router.post("/", response_model=FixedTimeSlotResponse, operation_id="create_fixed_time_slot")
 def create_fixed_time_slot(
     slot: FixedTimeSlotCreate,
     db: Session = Depends(get_db)
 ):
+    """Tạo fixed slot - CHỈ cho phép trong 3 khung giờ: 7-11, 13-17, 19-22"""
     if not is_in_allowed_frame(slot.start_time, slot.end_time):
         raise HTTPException(
             status_code=400,
             detail="Fixed slot chỉ được tạo trong 3 khung giờ: 7-11, 13-17, 19-22"
         )
+    
     return create_fixed_slot(db=db, slot=slot)
 
 @router.get("/", operation_id="read_fixed_slots")
 def read_fixed_slots(db: Session = Depends(get_db)):
+    """Lấy danh sách fixed slot"""
     return get_fixed_slots(db)
