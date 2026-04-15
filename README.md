@@ -37,6 +37,4 @@ uvicorn app.main:app --reload
  - POST /optimize/ → Tối ưu lịch tự học
 
 ## 📝 Tác giả
-Trần Tuấn Anh
-Sinh viên Toán Ứng dụng năm 4
-Project 2 (sau Project Manager API)
+ - Trần Anh Tuấn sinh viên Toán Ứng dụng năm 4 Đại học Tôn Đức Thắng
