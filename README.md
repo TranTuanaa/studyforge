@@ -1,40 +1,58 @@
 # StudyForge - Smart Study Scheduler Backend
 
-**Công cụ tối ưu lịch tự học thông minh cho sinh viên**  
-Sử dụng Linear Programming (PuLP) + FastAPI, phù hợp với sinh viên Toán Ứng dụng.
+**Tối ưu lịch học + nghỉ ngơi theo tuần bằng Linear Programming + Priority Allocation**
 
-### ✨ Tính năng nổi bật
-- Tính **thời gian rảnh thực tế** (đã trừ lịch học trên trường + fixed activities)
-- Chỉ cho phép tự học trong **3 khung giờ cố định**: 7h-11h, 13h-17h, 19h-22h
-- Phân bổ thời gian tự học theo **tỷ lệ ưu tiên** (priority)
-- Mỗi môn **tối đa 4 tiếng/ngày**
-- Validation nghiêm ngặt cho fixed time slot
+Một backend FastAPI giúp sinh viên tự động phân bổ thời gian tự học hợp lý, cân bằng giữa deadline, lịch học trường, fixed time (ngủ, làm thêm, thể thao) và độ ưu tiên của từng môn.
 
-### 🛠 Công nghệ
-- **FastAPI**
-- **SQLAlchemy** + Alembic
-- **PuLP** (Linear Programming)
-- SQLite
+### ✨ Tính năng chính
+- CRUD môn học (tên, tín chỉ, độ ưu tiên, độ khó)
+- Quản lý lịch học trên trường và fixed time slot (chỉ cho phép trong 3 khung giờ: 7-11, 13-17, 19-22)
+- **Tối ưu lịch tự học** thông minh:
+  - Tính real free time (trừ lịch học trường + fixed slot)
+  - Phân bổ theo % priority 
+  - Mỗi môn tối đa 4 tiếng/ngày
+- Import môn học từ file **CSV** 
+- Export thời khóa biểu ra file **Excel** 
+
+### 🛠 Công nghệ sử dụng
+- **FastAPI** (Python)
+- **SQLAlchemy 2.0** + Alembic (migrations)
+- **PuLP** (Linear Programming - tối ưu)
+- **Pydantic v2**
+- SQLite (dễ deploy)
+- Pandas + Openpyxl (export Excel)
+- CORS, Swagger UI
 
 ### 🚀 Cách chạy local
-
 ```bash
+# 1. Clone project
 git clone https://github.com/TranTuanaa/studyforge.git
 cd studyforge
 
-python -m venv venv
+# 2. Tạo môi trường
+py -3.12 -m venv venv
 venv\Scripts\activate
 
+# 3. Cài dependencies
 pip install -r requirements.txt
+
+# 4. Chạy server
 uvicorn app.main:app --reload
 ```
-## Swagger UI: http://127.0.0.1:8000/docs
+## Mở Swagger UI: http://127.0.0.1:8000/docs
 ## 📌 API chính
 
- - POST /subjects/ → Tạo môn học
- - POST /class-schedules/ → Tạo lịch học trên trường
- - POST /fixed-slots/ → Tạo hoạt động cố định (chỉ cho phép trong 3 khung giờ)
- - POST /optimize/ → Tối ưu lịch tự học
+ - POST /optimize/ → Tối ưu lịch học
+ - POST /import/subjects/ → Import từ CSV
+ - POST /export/schedule/ → Tải Excel thời khóa biểu
+ - CRUD cho Subject, FixedTimeSlot, ClassSchedule
 
-## 📝 Tác giả
- - Trần Anh Tuấn sinh viên Toán Ứng dụng năm 4 Đại học Tôn Đức Thắng
+## 📸 Demo
+
+ - Swagger UI: http://127.0.0.1:8000/docs
+ - Deploy live: https://studyforge-cn7l.onrender.com/docs
+
+## Tác giả
+ - Trần Anh Tuấn
+ - Sinh viên Toán Ứng dụng năm 4 Đại học Tôn Đức Thắng (TDTU)
+ - Backend Python Developer
