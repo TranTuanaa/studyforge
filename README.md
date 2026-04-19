@@ -34,6 +34,12 @@ Swagger UI:
 http://127.0.0.1:8000/docs
 ```
 
+## Live Demo
+
+- API root: https://studyforge-cn7l.onrender.com
+- Swagger UI: https://studyforge-cn7l.onrender.com/docs
+- Sample CSV: `sample_import_all.csv`
+
 ## Main APIs
 
 - `POST /import/all/` - import full CSV data
