@@ -1,0 +1,7 @@
+type,name,credits,priority,difficulty,subject_name,subject_id,day_of_week,start_time,end_time,activity,room
+subject,Math,3,8,6,,,,,,,
+subject,Physics,4,7,8,,,,,,,
+class_schedule,,,,,Math,,0,07:00,09:00,,A101
+class_schedule,,,,,Physics,,2,13:00,15:00,,B202
+fixed_time,,,,,,,1,19:00,20:00,Gym,
+fixed_time,,,,,,,4,13:00,14:00,Part-time job,

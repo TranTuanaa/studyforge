@@ -1,58 +1,69 @@
-# StudyForge - Smart Study Scheduler Backend
+# StudyForge Backend
 
-**Tối ưu lịch học + nghỉ ngơi theo tuần bằng Linear Programming + Priority Allocation**
+StudyForge is a FastAPI backend for importing study data, storing class schedules and fixed time slots, then generating a weekly self-study allocation based on subject priority.
 
-Một backend FastAPI giúp sinh viên tự động phân bổ thời gian tự học hợp lý, cân bằng giữa deadline, lịch học trường, fixed time (ngủ, làm thêm, thể thao) và độ ưu tiên của từng môn.
+## Features
 
-### ✨ Tính năng chính
-- CRUD môn học (tên, tín chỉ, độ ưu tiên, độ khó)
-- Quản lý lịch học trên trường và fixed time slot (chỉ cho phép trong 3 khung giờ: 7-11, 13-17, 19-22)
-- **Tối ưu lịch tự học** thông minh:
-  - Tính real free time (trừ lịch học trường + fixed slot)
-  - Phân bổ theo % priority 
-  - Mỗi môn tối đa 4 tiếng/ngày
-- Import môn học từ file **CSV** 
-- Export thời khóa biểu ra file **Excel** 
+- Basic CRUD APIs for subjects, fixed time slots, and class schedules
+- CSV import for full study data: subjects, class schedules, and fixed time slots
+- Weekly optimization based on real available time and subject priority
+- CSV export for the generated study schedule
+- Swagger UI for quick testing
 
-### 🛠 Công nghệ sử dụng
-- **FastAPI** (Python)
-- **SQLAlchemy 2.0** + Alembic (migrations)
-- **PuLP** (Linear Programming - tối ưu)
-- **Pydantic v2**
-- SQLite (dễ deploy)
-- Pandas + Openpyxl (export Excel)
-- CORS, Swagger UI
+## Tech Stack
 
-### 🚀 Cách chạy local
-```bash
-# 1. Clone project
-git clone https://github.com/TranTuanaa/studyforge.git
-cd studyforge
+- FastAPI
+- SQLAlchemy
+- Alembic
+- Pydantic v2
+- SQLite
+- Uvicorn
 
-# 2. Tạo môi trường
-py -3.12 -m venv venv
-venv\Scripts\activate
+## Run Locally
 
-# 3. Cài dependencies
+```powershell
+py -3.11 -m venv venv
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# 4. Chạy server
 uvicorn app.main:app --reload
 ```
-## Mở Swagger UI: http://127.0.0.1:8000/docs
-## 📌 API chính
 
- - POST /optimize/ → Tối ưu lịch học
- - POST /import/subjects/ → Import từ CSV
- - POST /export/schedule/ → Tải Excel thời khóa biểu
- - CRUD cho Subject, FixedTimeSlot, ClassSchedule
+Swagger UI:
 
-## 📸 Demo
+```text
+http://127.0.0.1:8000/docs
+```
 
- - Swagger UI: http://127.0.0.1:8000/docs
- - Deploy live: https://studyforge-cn7l.onrender.com/docs
+## Main APIs
 
-## Tác giả
- - Trần Anh Tuấn
- - Sinh viên Toán Ứng dụng năm 4 Đại học Tôn Đức Thắng (TDTU)
- - Backend Python Developer
+- `POST /import/all/` - import full CSV data
+- `POST /optimize/` - generate optimized study schedule
+- `POST /export/schedule/` - export schedule as CSV
+- `GET/POST /subjects/`
+- `GET/POST /fixed-time-slots/`
+- `GET/POST /class-schedules/`
+
+## CSV Import Format
+
+Use `sample_import_all.csv` as a ready-to-test file in Swagger.
+
+```csv
+type,name,credits,priority,difficulty,subject_name,subject_id,day_of_week,start_time,end_time,activity,room
+subject,Math,3,8,6,,,,,,,
+subject,Physics,4,7,8,,,,,,,
+class_schedule,,,,,Math,,0,07:00,09:00,,A101
+class_schedule,,,,,Physics,,2,13:00,15:00,,B202
+fixed_time,,,,,,,1,19:00,20:00,Gym,
+fixed_time,,,,,,,4,13:00,14:00,Part-time job,
+```
+
+`day_of_week` uses `0 = Monday` through `6 = Sunday`.
+
+## Code Structure
+
+- `app/routers/` contains API endpoints
+- `app/schemas/` contains Pydantic request/response models
+- `app/models/` contains SQLAlchemy models
+- `app/crud/` contains database operations
+- `app/services/` contains import and optimization logic
+- CSV import uses rollback if any row fails

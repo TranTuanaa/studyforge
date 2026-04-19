@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import time
+
+from pydantic import BaseModel, ConfigDict
+
 
 class FixedTimeSlotBase(BaseModel):
     day_of_week: int
@@ -8,11 +9,12 @@ class FixedTimeSlotBase(BaseModel):
     end_time: time
     activity: str
 
+
 class FixedTimeSlotCreate(FixedTimeSlotBase):
     pass
+
 
 class FixedTimeSlotResponse(FixedTimeSlotBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

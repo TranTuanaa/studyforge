@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.models.base import Base
 from app.models.subject import Subject
 from app.models.fixed_time_slot import FixedTimeSlot
+from app.models.class_schedule import ClassSchedule
 from app.models.study_log import StudyLog
 
 from app.core.config import DATABASE_URL
