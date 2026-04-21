@@ -15,12 +15,6 @@ def time_to_hour(value: time | str) -> float:
     return int(parts[0]) + int(parts[1]) / 60
 
 
-def is_within_study_frames(start_time: time, end_time: time) -> bool:
-    start_hour = time_to_hour(start_time)
-    end_hour = time_to_hour(end_time)
-    return any(start <= start_hour and end_hour <= end for start, end in STUDY_FRAMES)
-
-
 def get_overlap_with_study_frames(start_time: time | str, end_time: time | str) -> float:
     start_hour = time_to_hour(start_time)
     end_hour = time_to_hour(end_time)
@@ -33,3 +27,7 @@ def get_overlap_with_study_frames(start_time: time | str, end_time: time | str) 
             overlap += overlap_end - overlap_start
 
     return round(overlap, 2)
+
+
+def has_study_frame_overlap(start_time: time | str, end_time: time | str) -> bool:
+    return get_overlap_with_study_frames(start_time, end_time) > 0

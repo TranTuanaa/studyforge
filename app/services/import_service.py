@@ -6,7 +6,7 @@ from fastapi import HTTPException, UploadFile
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.core.study_frames import is_within_study_frames
+from app.core.study_frames import has_study_frame_overlap
 from app.models.class_schedule import ClassSchedule
 from app.models.fixed_time_slot import FixedTimeSlot
 from app.models.subject import Subject
@@ -62,8 +62,8 @@ def parse_interval(row: dict, fixed_time: bool = False) -> tuple[time, time]:
     if (end.hour, end.minute) <= (start.hour, start.minute):
         raise ValueError("end_time must be after start_time")
 
-    if fixed_time and not is_within_study_frames(start, end):
-        raise ValueError("fixed_time must stay inside 7-11, 13-17, or 19-22")
+    if fixed_time and not has_study_frame_overlap(start, end):
+        raise ValueError("fixed_time must overlap at least one study frame: 7-11, 13-17, or 19-22")
 
     return start, end
 

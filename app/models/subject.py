@@ -8,7 +8,7 @@ class Subject(Base):
     __tablename__ = "subjects"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
+    name = Column(String, index=True, unique=True, nullable=False)
     credits = Column(Integer, nullable=False)
     difficulty = Column(Integer, default=5)
     priority = Column(Integer, default=5)

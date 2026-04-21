@@ -1,12 +1,12 @@
 # StudyForge Backend
 
-StudyForge is a FastAPI backend for importing study data, storing class schedules and fixed time slots, then generating a weekly self-study allocation based on subject priority.
+StudyForge is a FastAPI backend for importing study data, storing class schedules and fixed time slots, then generating a priority-based weekly study plan.
 
 ## Features
 
 - Basic CRUD APIs for subjects, fixed time slots, and class schedules
 - CSV import for full study data: subjects, class schedules, and fixed time slots
-- Weekly optimization based on real free time for each day and subject priority
+- Priority-based weekly study plan generation from real free time inside study frames
 - CSV export for the generated study schedule
 - Swagger UI for quick testing
 
@@ -50,7 +50,7 @@ http://127.0.0.1:8000/docs
 ## Main APIs
 
 - `POST /import/all/` - import full CSV data
-- `POST /optimize/` - generate weekly study-hour allocation by day
+- `POST /optimize/` - generate a priority-based weekly study plan
 - `POST /export/schedule/` - export schedule as CSV
 - `GET/POST /subjects/`
 - `GET/POST /fixed-time-slots/`
@@ -78,7 +78,7 @@ fixed_time,,,,,,,4,13:00,14:00,Part-time job,
 - `app/schemas/` contains Pydantic request/response models
 - `app/models/` contains SQLAlchemy models
 - `app/crud/` contains database operations
-- `app/services/` contains import and optimization logic
+- `app/services/` contains import and study-plan generation logic
 - Database tables are created automatically on startup
 - CSV import uses rollback if any row fails
-- Optimization returns daily study hours per subject, not exact calendar time blocks
+- Study-plan generation returns daily allocated hours per subject, not exact calendar time blocks

@@ -17,5 +17,8 @@ def create_class_schedule(db: Session, schedule: ClassScheduleCreate):
     return db_schedule
 
 
-def get_class_schedules(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(ClassSchedule).offset(skip).limit(limit).all()
+def get_class_schedules(db: Session, skip: int = 0, limit: int | None = 100):
+    query = db.query(ClassSchedule).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    return query.all()

@@ -6,25 +6,25 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.routers.optimization import build_optimized_schedule
+from app.services.study_plan_service import build_study_plan
 
 router = APIRouter(prefix="/export", tags=["Export"])
 
 
 @router.post("/schedule/")
 def export_schedule_to_csv(db: Session = Depends(get_db)):
-    result = build_optimized_schedule(db)
+    result = build_study_plan(db)
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Subject", "Total Hours", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+    writer.writerow(["Subject", "Allocated Hours", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
 
-    for item in result["schedule"]:
+    for item in result["study_plan"]:
         daily_hours = item["daily_hours"]
         writer.writerow(
             [
                 item["subject"],
-                item["total_hours"],
+                item["allocated_hours"],
                 daily_hours[0],
                 daily_hours[1],
                 daily_hours[2],

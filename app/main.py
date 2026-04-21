@@ -9,7 +9,7 @@ from app.routers.class_schedule import router as class_schedule_router
 from app.routers.export_schedule import router as export_router
 from app.routers.fixed_time_slot import router as fixed_slot_router
 from app.routers.import_all import router as import_all_router
-from app.routers.optimization import router as optimization_router
+from app.routers.study_plan import router as study_plan_router
 from app.routers.subject import router as subject_router
 
 app = FastAPI(
@@ -46,6 +46,6 @@ async def health_check(db: Session = Depends(get_db)):
 app.include_router(subject_router)
 app.include_router(fixed_slot_router)
 app.include_router(class_schedule_router)
-app.include_router(optimization_router)
+app.include_router(study_plan_router)
 app.include_router(import_all_router)
 app.include_router(export_router)
