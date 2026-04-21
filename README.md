@@ -29,6 +29,12 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+Optional environment file:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 Swagger UI:
 
 ```text
@@ -44,7 +50,7 @@ http://127.0.0.1:8000/docs
 ## Main APIs
 
 - `POST /import/all/` - import full CSV data
-- `POST /optimize/` - generate optimized study schedule
+- `POST /optimize/` - generate weekly study-hour allocation by day
 - `POST /export/schedule/` - export schedule as CSV
 - `GET/POST /subjects/`
 - `GET/POST /fixed-time-slots/`
@@ -75,3 +81,4 @@ fixed_time,,,,,,,4,13:00,14:00,Part-time job,
 - `app/services/` contains import and optimization logic
 - Database tables are created automatically on startup
 - CSV import uses rollback if any row fails
+- Optimization returns daily study hours per subject, not exact calendar time blocks

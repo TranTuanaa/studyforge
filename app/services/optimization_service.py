@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from app.core.study_frames import STUDY_HOURS_PER_DAY, get_overlap_with_study_frames
+from app.core.study_frames import STUDY_FRAMES, STUDY_HOURS_PER_DAY, time_to_hour
 
 
 class OptimizationService:
@@ -9,21 +9,57 @@ class OptimizationService:
     def round_to_half(self, value: float) -> float:
         return round(value * 2) / 2
 
+    def get_frame_segments(self, start_time, end_time) -> List[tuple[float, float]]:
+        start_hour = time_to_hour(start_time)
+        end_hour = time_to_hour(end_time)
+        segments = []
+
+        for frame_start, frame_end in STUDY_FRAMES:
+            overlap_start = max(start_hour, frame_start)
+            overlap_end = min(end_hour, frame_end)
+            if overlap_end > overlap_start:
+                segments.append((overlap_start, overlap_end))
+
+        return segments
+
+    def merge_segments(self, segments: List[tuple[float, float]]) -> List[tuple[float, float]]:
+        if not segments:
+            return []
+
+        sorted_segments = sorted(segments)
+        merged = [sorted_segments[0]]
+
+        for start, end in sorted_segments[1:]:
+            last_start, last_end = merged[-1]
+            if start <= last_end:
+                merged[-1] = (last_start, max(last_end, end))
+            else:
+                merged.append((start, end))
+
+        return merged
+
     def get_daily_free_time(
         self,
         days: int = 7,
         class_schedules: List[Dict] | None = None,
         fixed_slots: List[Dict] | None = None,
     ) -> List[float]:
-        daily_free_time = [STUDY_HOURS_PER_DAY] * days
+        occupied_segments_by_day: List[List[tuple[float, float]]] = [[] for _ in range(days)]
 
         for item in (class_schedules or []) + (fixed_slots or []):
             day = item.get("day_of_week")
             if day not in range(days):
                 continue
 
-            occupied = get_overlap_with_study_frames(item["start_time"], item["end_time"])
-            daily_free_time[day] = round(max(0.0, daily_free_time[day] - occupied), 2)
+            occupied_segments_by_day[day].extend(
+                self.get_frame_segments(item["start_time"], item["end_time"])
+            )
+
+        daily_free_time = []
+        for segments in occupied_segments_by_day:
+            merged_segments = self.merge_segments(segments)
+            occupied = sum(end - start for start, end in merged_segments)
+            daily_free_time.append(round(max(0.0, STUDY_HOURS_PER_DAY - occupied), 2))
 
         return daily_free_time
 
