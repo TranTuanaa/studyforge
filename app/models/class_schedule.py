@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, Time, ForeignKey, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Time
 from sqlalchemy.sql import func
+
 from app.models.base import Base
+
 
 class ClassSchedule(Base):
     __tablename__ = "class_schedules"

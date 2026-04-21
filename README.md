@@ -6,7 +6,7 @@ StudyForge is a FastAPI backend for importing study data, storing class schedule
 
 - Basic CRUD APIs for subjects, fixed time slots, and class schedules
 - CSV import for full study data: subjects, class schedules, and fixed time slots
-- Weekly optimization based on real available time and subject priority
+- Weekly optimization based on real free time for each day and subject priority
 - CSV export for the generated study schedule
 - Swagger UI for quick testing
 
@@ -14,15 +14,16 @@ StudyForge is a FastAPI backend for importing study data, storing class schedule
 
 - FastAPI
 - SQLAlchemy
-- Alembic
 - Pydantic v2
 - SQLite
 - Uvicorn
 
 ## Run Locally
 
+Project target Python version: `3.12.8` from `.python-version`.
+
 ```powershell
-py -3.11 -m venv venv
+py -3.12 -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn app.main:app --reload
@@ -72,4 +73,5 @@ fixed_time,,,,,,,4,13:00,14:00,Part-time job,
 - `app/models/` contains SQLAlchemy models
 - `app/crud/` contains database operations
 - `app/services/` contains import and optimization logic
+- Database tables are created automatically on startup
 - CSV import uses rollback if any row fails

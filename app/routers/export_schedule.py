@@ -6,14 +6,14 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.routers.optimization import optimize_schedule
+from app.routers.optimization import build_optimized_schedule
 
 router = APIRouter(prefix="/export", tags=["Export"])
 
 
 @router.post("/schedule/")
 def export_schedule_to_csv(db: Session = Depends(get_db)):
-    result = optimize_schedule(db=db)
+    result = build_optimized_schedule(db)
 
     output = io.StringIO()
     writer = csv.writer(output)

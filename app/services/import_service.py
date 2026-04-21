@@ -1,16 +1,16 @@
-from datetime import time
 import csv
 import io
+from datetime import time
 
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.study_frames import is_within_study_frames
 from app.models.class_schedule import ClassSchedule
 from app.models.fixed_time_slot import FixedTimeSlot
 from app.models.subject import Subject
 
-ALLOWED_FRAMES = [(7, 11), (13, 17), (19, 22)]
 VALID_TYPES = {"subject", "class_schedule", "fixed_time"}
 
 
@@ -62,9 +62,7 @@ def parse_interval(row: dict, fixed_time: bool = False) -> tuple[time, time]:
     if (end.hour, end.minute) <= (start.hour, start.minute):
         raise ValueError("end_time must be after start_time")
 
-    start_hour = start.hour + start.minute / 60
-    end_hour = end.hour + end.minute / 60
-    if fixed_time and not any(a <= start_hour and end_hour <= b for a, b in ALLOWED_FRAMES):
+    if fixed_time and not is_within_study_frames(start, end):
         raise ValueError("fixed_time must stay inside 7-11, 13-17, or 19-22")
 
     return start, end

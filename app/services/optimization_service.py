@@ -1,34 +1,31 @@
-from datetime import time
 from typing import Dict, List
+
+from app.core.study_frames import STUDY_HOURS_PER_DAY, get_overlap_with_study_frames
 
 
 class OptimizationService:
+    ALLOCATION_STEP = 0.5
+
     def round_to_half(self, value: float) -> float:
         return round(value * 2) / 2
 
-    def get_duration(self, start, end) -> float:
-        def to_hour(value) -> float:
-            if isinstance(value, time):
-                return value.hour + value.minute / 60
-            return float(str(value)[:2]) + float(str(value)[3:5]) / 60
-
-        return to_hour(end) - to_hour(start)
-
-    def calculate_real_free_time(
+    def get_daily_free_time(
         self,
         days: int = 7,
         class_schedules: List[Dict] | None = None,
         fixed_slots: List[Dict] | None = None,
-    ) -> float:
-        total_possible = 11.0 * days
-        occupied = 0.0
+    ) -> List[float]:
+        daily_free_time = [STUDY_HOURS_PER_DAY] * days
 
-        for item in class_schedules or []:
-            occupied += self.get_duration(item["start_time"], item["end_time"])
-        for item in fixed_slots or []:
-            occupied += self.get_duration(item["start_time"], item["end_time"])
+        for item in (class_schedules or []) + (fixed_slots or []):
+            day = item.get("day_of_week")
+            if day not in range(days):
+                continue
 
-        return round(max(0.0, total_possible - occupied), 2)
+            occupied = get_overlap_with_study_frames(item["start_time"], item["end_time"])
+            daily_free_time[day] = round(max(0.0, daily_free_time[day] - occupied), 2)
+
+        return daily_free_time
 
     def allocate_percentages(self, subjects: List[Dict], total_study_time: float) -> List[Dict]:
         if not subjects:
@@ -39,41 +36,53 @@ class OptimizationService:
             total_priority = len(subjects)
             for subject in subjects:
                 subject["priority"] = 1
+
         subjects_by_priority = sorted(subjects, key=lambda subject: subject.get("priority", 5), reverse=True)
 
         allocation = []
-        used = 0.0
+        remaining = total_study_time
         for subject in subjects_by_priority[:-1]:
             hours = self.round_to_half(subject.get("priority", 5) / total_priority * total_study_time)
+            hours = min(hours, remaining)
             allocation.append({"subject": subject["name"], "priority": subject.get("priority", 5), "hours": hours})
-            used += hours
+            remaining = round(remaining - hours, 2)
 
         last_subject = subjects_by_priority[-1]
         allocation.append(
             {
                 "subject": last_subject["name"],
                 "priority": last_subject.get("priority", 5),
-                "hours": round(total_study_time - used, 2),
+                "hours": round(max(0.0, remaining), 2),
             }
         )
         return allocation
 
-    def fill_schedule(self, allocation: List[Dict], days: int = 7) -> List[Dict]:
-        daily_free = [11.0] * days
+    def fill_schedule(self, allocation: List[Dict], daily_free_time: List[float]) -> List[Dict]:
+        daily_free = daily_free_time.copy()
         schedule = []
 
         for item in sorted(allocation, key=lambda value: value["priority"], reverse=True):
             remaining = item["hours"]
-            daily_hours = [0.0] * days
+            daily_hours = [0.0] * len(daily_free)
 
-            for day in range(days):
-                if remaining <= 0:
+            while remaining > 0:
+                allocated_in_pass = False
+
+                for day in range(len(daily_free)):
+                    if remaining <= 0:
+                        break
+
+                    hours = min(self.ALLOCATION_STEP, remaining, daily_free[day])
+                    if hours <= 0:
+                        continue
+
+                    daily_hours[day] = round(daily_hours[day] + hours, 2)
+                    daily_free[day] = round(daily_free[day] - hours, 2)
+                    remaining = round(remaining - hours, 2)
+                    allocated_in_pass = True
+
+                if not allocated_in_pass:
                     break
-
-                hours = min(4.0, remaining, daily_free[day])
-                daily_hours[day] = hours
-                daily_free[day] -= hours
-                remaining -= hours
 
             schedule.append(
                 {
@@ -92,12 +101,13 @@ class OptimizationService:
         fixed_slots: List[Dict] | None = None,
         days: int = 7,
     ) -> Dict:
-        real_free_time = self.calculate_real_free_time(days, class_schedules, fixed_slots)
+        daily_free_time = self.get_daily_free_time(days, class_schedules, fixed_slots)
+        real_free_time = round(sum(daily_free_time), 2)
         allocation = self.allocate_percentages(subjects, real_free_time)
 
         return {
             "status": "Optimal",
             "objective_value": real_free_time,
-            "schedule": self.fill_schedule(allocation, days),
-            "message": f"Real available study time: {real_free_time} hours",
+            "schedule": self.fill_schedule(allocation, daily_free_time),
+            "message": f"Real available study time inside study frames: {real_free_time} hours",
         }
